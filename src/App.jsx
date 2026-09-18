@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { defaultDemoData } from './data/demoData'
 import { calculateScenario, validateDecision } from './engine/simulationEngine'
 import { usePersistentState } from './hooks/usePersistentState'
@@ -17,6 +17,8 @@ import { HistoryPanel } from './components/HistoryPanel'
 import { SettingsPanel } from './components/SettingsPanel'
 
 const pageTitles = { dashboard: 'Overview', 'decision-lab': 'Decision Lab', future: 'Future Simulator', goals: 'Goals', cashflow: 'Cashflow', 'stress-test': 'Stress Test', history: 'Decision History', 'ai-teammates': 'AI Teammates', settings: 'Settings', about: 'Project links' }
+const routes = { dashboard: '/overview', 'decision-lab': '/decision-lab', future: '/future-simulator', goals: '/goals', cashflow: '/cashflow', 'stress-test': '/stress-test', history: '/history', 'ai-teammates': '/ai-teammates', settings: '/settings' }
+const pagesByRoute = Object.fromEntries(Object.entries(routes).map(([page, route]) => [route, page]))
 const blankStress = { salaryDelay: false, emergency: false, weekend: false, unexpectedBill: false }
 
 export default function App() {
@@ -31,6 +33,12 @@ export default function App() {
   const [connecting, setConnecting] = useState(false)
   const [error, setError] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
+  useEffect(() => {
+    const syncFromLocation = () => setPage(pagesByRoute[window.location.pathname] || 'dashboard')
+    syncFromLocation()
+    window.addEventListener('popstate', syncFromLocation)
+    return () => window.removeEventListener('popstate', syncFromLocation)
+  }, [])
   const result = useMemo(() => calculateScenario({ data, decision, scenarioId: selectedScenario, stressTests }), [data, decision, selectedScenario, stressTests])
   const runSimulation = () => {
     const message = validateDecision(data, decision)
@@ -43,6 +51,7 @@ export default function App() {
   const connectDemo = () => { setConnecting(true); window.setTimeout(() => { setData(current => ({ ...defaultDemoData, purchase: current.purchase })); setConnected(true); setConnecting(false) }, 650) }
   const restore = item => { setDecision(item.decision); setSelectedScenario(item.scenario.id); setStressTests(blankStress); setSimulated(true); setPage('future') }
   const reset = () => { setData(defaultDemoData); setDecision(defaultDemoData.purchase); setSelectedScenario('buy-now'); setStressTests(blankStress); setConnected(false) }
+  const navigate = next => { setPage(next); const route = routes[next] || '/overview'; if (window.location.pathname !== route) window.history.pushState({}, '', route) }
   const dashboardProps = { data, setData, decision, setDecision, result, simulated, onSimulate: runSimulation, error, selectedScenario, setSelectedScenario, stressTests, setStressTests, connected, onConnect: connectDemo, connecting }
-  return <div className="ms-app"><Sidebar page={page} setPage={setPage} open={menuOpen} onClose={() => setMenuOpen(false)}/><main className="ms-main"><Header title={pageTitles[page]} balance={data.currentBalance} onMenu={() => setMenuOpen(true)}/><div className="ms-content">{page === 'dashboard' && <Dashboard {...dashboardProps}/>} {page === 'decision-lab' && <DecisionLab data={data} decision={decision} setDecision={setDecision} onSimulate={runSimulation} error={error} setPage={setPage}/>} {page === 'future' && <Future data={data} setData={setData} decision={decision} setDecision={setDecision} result={result} selectedScenario={selectedScenario} setSelectedScenario={setSelectedScenario} onWhy={() => setPage('ai-teammates')}/>} {page === 'goals' && <Goals data={data} result={result}/>} {page === 'cashflow' && <Cashflow data={data}/>} {page === 'stress-test' && <StressTest data={data} setData={setData} decision={decision} setDecision={setDecision} result={result} stressTests={stressTests} setStressTests={setStressTests}/>} {page === 'history' && <HistoryPanel history={history} onRestore={restore} onClear={() => setHistory([])} onDelete={id => setHistory(current => current.filter(item => item.id !== id))}/>} {page === 'ai-teammates' && <AITeammates result={result}/>} {page === 'settings' && <SettingsPanel data={data} setData={setData} onReset={reset}/>} {page === 'about' && <About/>}<DevNetworkInfo/><footer className="ms-footer">Money Sandbox · Team Carpe Diem · Harshit Aggarwal · Prem Verma</footer></div></main></div>
+  return <div className="ms-app"><Sidebar page={page} setPage={navigate} open={menuOpen} onClose={() => setMenuOpen(false)}/><main className="ms-main"><Header title={pageTitles[page]} balance={data.currentBalance} onMenu={() => setMenuOpen(true)}/><div className="ms-content">{page === 'dashboard' && <Dashboard {...dashboardProps}/>} {page === 'decision-lab' && <DecisionLab data={data} decision={decision} setDecision={setDecision} onSimulate={runSimulation} error={error} setPage={navigate}/>} {page === 'future' && <Future data={data} setData={setData} decision={decision} setDecision={setDecision} result={result} selectedScenario={selectedScenario} setSelectedScenario={setSelectedScenario} onWhy={() => navigate('ai-teammates')}/>} {page === 'goals' && <Goals data={data} result={result}/>} {page === 'cashflow' && <Cashflow data={data}/>} {page === 'stress-test' && <StressTest data={data} setData={setData} decision={decision} setDecision={setDecision} result={result} stressTests={stressTests} setStressTests={setStressTests}/>} {page === 'history' && <HistoryPanel history={history} onRestore={restore} onClear={() => setHistory([])} onDelete={id => setHistory(current => current.filter(item => item.id !== id))}/>} {page === 'ai-teammates' && <AITeammates result={result}/>} {page === 'settings' && <SettingsPanel data={data} setData={setData} onReset={reset}/>} {page === 'about' && <About/>}<DevNetworkInfo/><footer className="ms-footer">Money Sandbox · Team Carpe Diem · Harshit Aggarwal · Prem Verma</footer></div></main></div>
 }

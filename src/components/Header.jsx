@@ -1,2 +1,3 @@
 import { Menu } from 'lucide-react'
-export function Header({ title, onMenu }) { return <header className="ms-header"><button className="ms-menu" onClick={onMenu} aria-label="Open navigation"><Menu size={20}/></button><span className="ms-crumb">PERSONAL SPACE / {title.toUpperCase()}</span><span className="ms-demo-badge"><i/> DEMO MODE · SYNTHETIC DATA</span></header> }
+import { formatINR } from '../utils/currency'
+export function Header({ title, onMenu, balance }) { return <header className="ms-header"><button className="ms-menu" onClick={onMenu} aria-label="Open navigation"><Menu size={20}/></button><span className="ms-crumb">PERSONAL SPACE / {title.toUpperCase()}</span><div className="ms-header-right"><span className="ms-header-balance">Balance <b>{formatINR(balance)}</b></span><span className="ms-demo-badge"><i/> DEMO MODE · SYNTHETIC DATA</span><span className="ms-profile-dot" aria-label="Profile">HS</span></div></header> }

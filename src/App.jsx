@@ -8,11 +8,15 @@ import { DevNetworkInfo } from './components/DevNetworkInfo'
 import { Dashboard } from './pages/Dashboard'
 import { Future } from './pages/Future'
 import { Goals } from './pages/Goals'
+import { DecisionLab } from './pages/DecisionLab'
+import { Cashflow } from './pages/Cashflow'
+import { StressTest } from './pages/StressTest'
+import { AITeammates } from './pages/AITeammates'
 import { About } from './pages/About'
 import { HistoryPanel } from './components/HistoryPanel'
 import { SettingsPanel } from './components/SettingsPanel'
 
-const pageTitles = { dashboard: 'Dashboard', future: 'Future', goals: 'Goals', history: 'History', settings: 'Demo data', about: 'Project links' }
+const pageTitles = { dashboard: 'Overview', 'decision-lab': 'Decision Lab', future: 'Future Simulator', goals: 'Goals', cashflow: 'Cashflow', 'stress-test': 'Stress Test', history: 'Decision History', 'ai-teammates': 'AI Teammates', settings: 'Settings', about: 'Project links' }
 const blankStress = { salaryDelay: false, emergency: false, weekend: false, unexpectedBill: false }
 
 export default function App() {
@@ -37,8 +41,8 @@ export default function App() {
     window.setTimeout(() => document.getElementById('simulation-result')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50)
   }
   const connectDemo = () => { setConnecting(true); window.setTimeout(() => { setData(current => ({ ...defaultDemoData, purchase: current.purchase })); setConnected(true); setConnecting(false) }, 650) }
-  const restore = item => { setDecision(item.decision); setSelectedScenario(item.scenario.id); setStressTests(blankStress); setSimulated(true); setPage('dashboard') }
+  const restore = item => { setDecision(item.decision); setSelectedScenario(item.scenario.id); setStressTests(blankStress); setSimulated(true); setPage('future') }
   const reset = () => { setData(defaultDemoData); setDecision(defaultDemoData.purchase); setSelectedScenario('buy-now'); setStressTests(blankStress); setConnected(false) }
   const dashboardProps = { data, setData, decision, setDecision, result, simulated, onSimulate: runSimulation, error, selectedScenario, setSelectedScenario, stressTests, setStressTests, connected, onConnect: connectDemo, connecting }
-  return <div className="ms-app"><Sidebar page={page} setPage={setPage} open={menuOpen} onClose={() => setMenuOpen(false)}/><main className="ms-main"><Header title={pageTitles[page]} onMenu={() => setMenuOpen(true)}/><div className="ms-content">{page === 'dashboard' && <Dashboard {...dashboardProps}/>} {page === 'future' && <Future data={data} decision={decision} result={result} selectedScenario={selectedScenario} setSelectedScenario={setSelectedScenario}/>} {page === 'goals' && <Goals data={data} result={result}/>} {page === 'history' && <HistoryPanel history={history} onRestore={restore} onClear={() => setHistory([])}/>} {page === 'settings' && <SettingsPanel data={data} setData={setData} onReset={reset}/>} {page === 'about' && <About/>}<DevNetworkInfo/><footer className="ms-footer">Money Sandbox · Team Carpe Diem · Harshit Aggarwal · Prem Verma</footer></div></main></div>
+  return <div className="ms-app"><Sidebar page={page} setPage={setPage} open={menuOpen} onClose={() => setMenuOpen(false)}/><main className="ms-main"><Header title={pageTitles[page]} balance={data.currentBalance} onMenu={() => setMenuOpen(true)}/><div className="ms-content">{page === 'dashboard' && <Dashboard {...dashboardProps}/>} {page === 'decision-lab' && <DecisionLab data={data} decision={decision} setDecision={setDecision} onSimulate={runSimulation} error={error} setPage={setPage}/>} {page === 'future' && <Future data={data} setData={setData} decision={decision} setDecision={setDecision} result={result} selectedScenario={selectedScenario} setSelectedScenario={setSelectedScenario} onWhy={() => setPage('ai-teammates')}/>} {page === 'goals' && <Goals data={data} result={result}/>} {page === 'cashflow' && <Cashflow data={data}/>} {page === 'stress-test' && <StressTest data={data} setData={setData} decision={decision} setDecision={setDecision} result={result} stressTests={stressTests} setStressTests={setStressTests}/>} {page === 'history' && <HistoryPanel history={history} onRestore={restore} onClear={() => setHistory([])} onDelete={id => setHistory(current => current.filter(item => item.id !== id))}/>} {page === 'ai-teammates' && <AITeammates result={result}/>} {page === 'settings' && <SettingsPanel data={data} setData={setData} onReset={reset}/>} {page === 'about' && <About/>}<DevNetworkInfo/><footer className="ms-footer">Money Sandbox · Team Carpe Diem · Harshit Aggarwal · Prem Verma</footer></div></main></div>
 }

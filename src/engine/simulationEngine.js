@@ -54,7 +54,19 @@ export function calculateScenario({ data, decision, scenarioId, emergencyEnabled
   const riskData = calculateRisk({ buffer, commitments: totalExpenses, goalImpact: goal.impact, crashBuffer })
   const hasIncomeBeforePurchase = throughDay(data.expectedIncome, scenario.purchaseDay).length > 0
   const verdict = generateVerdict({ scenario, risk: riskData.risk, reasons: riskData.reasons, hasIncomeBeforePurchase })
-  const timeline = [0, 7, 15, 22, 30].map(day => ({ day: day === 0 ? 'Today' : `Day ${day}`, dayNumber: day, currentPlan: eventBalance(data, { ...scenario, id: 'wait', purchaseDay: 99 }, 0, day, {}), selected: eventBalance(data, scenario, amount, day, activeStress) }))
+  const timeline = Array.from({ length: 31 }, (_, day) => ({
+    day: day === 0 ? 'Today' : `Day ${day}`,
+    dayNumber: day,
+    currentPlan: eventBalance(data, { ...scenario, id: 'wait', purchaseDay: 99 }, 0, day, {}),
+    selected: eventBalance(data, scenario, amount, day, activeStress),
+    events: [
+      ...data.expectedIncome.filter(item => Number(item.daysUntil) === day).map(item => item.name),
+      ...data.upcomingExpenses.filter(item => Number(item.daysUntil) === day).map(item => item.name),
+      ...(day === scenario.purchaseDay ? [scenario.label] : []),
+      ...(activeStress.emergency && day === 18 ? ['Emergency event'] : []),
+      ...(activeStress.unexpectedBill && day === 20 ? ['Unexpected bill'] : [])
+    ]
+  }))
   const lowCashPoint = timeline.reduce((lowest, point) => point.selected < lowest.selected ? point : lowest, timeline[0])
   const safetyReserve = Number(data.assumptions.safetyReserve || 0)
   const daysBelowSafeZone = timeline.filter(point => point.selected < safetyReserve).length * 7

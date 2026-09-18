@@ -1,0 +1,3 @@
+import { ScenarioSelector } from '../components/ScenarioSelector'
+import { MoneyOutlook } from '../components/MoneyOutlook'
+export function Future({ data, decision, result, selectedScenario, setSelectedScenario }) { return <section className="ms-page"><div className="ms-page-heading"><div><p className="ms-kicker"><i/> FUTURE TIMELINE</p><h1>Explore the next 30 days.</h1><p>Choose a route and see how it changes your projected balance.</p></div></div><ScenarioSelector data={data} decision={decision} selected={selectedScenario} onSelect={setSelectedScenario}/><MoneyOutlook result={result} expanded/></section> }

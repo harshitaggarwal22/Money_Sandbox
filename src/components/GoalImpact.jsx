@@ -1,0 +1,4 @@
+import { Target } from 'lucide-react'
+import { formatINR } from '../utils/currency'
+
+export function GoalImpact({ goal, result }) { if (!goal) return null; return <section className="ms-goal-card"><p className="ms-kicker"><i/> GOAL IMPACT</p><div className="ms-goal-title"><div><h2>{goal.name}</h2><span>{formatINR(goal.target)} target · {goal.targetDate}</span></div><Target size={20}/></div><div className="ms-progress"><p><span>Before decision</span><b>{result.goal.before}% on track</b></p><i><em style={{ width: `${Math.min(100, result.goal.before)}%` }}/></i><p><span>After selected decision</span><b className={result.goal.after < result.goal.before ? 'negative' : 'positive'}>{result.goal.after}% on track</b></p><i className="after"><em style={{ width: `${Math.min(100, result.goal.after)}%` }}/></i></div><p className="ms-goal-message">{result.goal.message}</p></section> }
